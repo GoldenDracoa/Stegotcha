@@ -7,7 +7,9 @@ import java.io.IOException;
 
 /**
  * The main Operating class. Using the steghide command to embed or extract the messages.
- * 
+ *
+ *  5 octets txt FOR 1,51 ko bmp    (coef = 0.302)
+ *
  * Created by Alexandre on 16/03/2016.
  */
 public class Steganographie {
@@ -25,16 +27,18 @@ public class Steganographie {
             p="/";
         }
     }
+    //TODO : change the insert() function, the files to be used have to be size checked.
 
     /**
      * Embed the embedTxt into cover.bmp using the passphrase param
-     * @param embedTxt
-     * @param passphrase
+     * @param embedTxt the text that has to be embed
+     * @param passphrase the passphrase
      */
     protected void insert(String embedTxt, String passphrase) {
         System.out.println("Starting Insertion");
         File tmp = new File ("resources"+p+"embedMsg.txt");
-        File coverFile = new File ("resources"+p+"cover.bmp");
+        String coverFileName;
+
         try {
             FileWriter fw = new FileWriter(tmp);
             fw.write(embedTxt);
@@ -42,10 +46,12 @@ public class Steganographie {
         } catch (IOException e) {
             System.out.println("Erreur lors de l'écriture du message : "+e.getMessage());
         }
+
         String[] cmd;
-        if (tmp.length()<coverFile.length()) {
+        File coverFile = getBestWeightFile(tmp.getTotalSpace());
+        if (coverFile != null) {
             System.out.println("Embed text has a correct length.");
-            cmd = new String[]{"", "embed", "-ef resources" + p + "embedMsg.txt", "-cf " + "resources" + p +"cover.bmp", "-p " + passphrase, "-z 9"};
+            cmd = new String[]{"", "embed", "-ef resources" + p + "embedMsg.txt", "-cf " + "resources" + p +"covered files"+p+coverFile.getName(), "-p " + passphrase, "-z 9"};
 
             if (os.contains("Windows")) {
                 System.out.println("Windows OS detected");
@@ -65,15 +71,13 @@ public class Steganographie {
                 System.out.println("Embed execution failed");
                 e.printStackTrace();
             }
-        } else {
-            System.out.println("Secret Message too big !");
+            System.out.println("Insertion correctly ended");
         }
-        System.out.println("Insertion ended");
     }
 
     /**
      * Extract msg from recep.bmp using passphrase param.
-     * @param passphrase
+     * @param passphrase the passphrase. Here the owner username
      * @return Embeded text
      */
     protected String extract(String passphrase) {
@@ -118,6 +122,23 @@ public class Steganographie {
         tmp.delete();
         return result;
     }
+
+    private File getBestWeightFile(long required) {
+        System.out.println("Looking for the best weight file for "+required+" totalSpace.");
+        String filePath = "";
+        File coveringFiles = new File("resources"+p+"covering files");
+        File[] listFiles = coveringFiles.listFiles();
+        for (File f : listFiles) {
+            if (f.getTotalSpace()>=required*0.302) {
+                System.out.println("The file "+f.getName()+" is the most appropriated file.");
+                return f;
+            }
+        }
+        System.out.println("ERROR ! No file has been found.");
+        return null;
+    }
+
+
 
 }
 
