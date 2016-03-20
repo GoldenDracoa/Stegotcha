@@ -1,0 +1,29 @@
+      LOGIN :                         
+- Utilisateur rentre un pseudo | c'est tout.
+- Activation d'une variable (String) sur la classe Server | pour notifier la présence du compte
+
+      Inscription :
+- Utilisateur rentre un pseudo
+- A l'appui du bouton OK : cryptage du pseudo + la classe Server récupère le pseudo, l'adresse ip, et l'enregistre dans le .csv
+
+      Server :
+- Accès à un fichier .csv (qu'on mettra dans resources\"dataBank.csv") avec une colonne Pseudo CRYPTE! une colonne Ip | facile à faire GOOGLE
+- Envoi d'un ping régulier  pour savoir qui est encore connecté
+- Mise à jour de la JTextArea connectedUsers avec les pseudos CRYPTES connectés
+- Envoi :
+  - Chercher correspondance Pseudo CRYPTE - Ip 
+  - Appel de INSERTION de Stegano avec (Pseudo CRYPTE) si message secret 
+  - SI pas message secret : INSERTION de Stegano avec ("MESSAGE COMMUN")
+  - Envoyer send.bmp à IP
+  - Supprimer send.bmp
+
+- Recevoir :
+  - Extraire avec Extract(Crypter(MON PSEUDO))
+  - Si rien, Extract("MESSAGE COMMUN")
+  - Mise à jour de JTextArea Tchat
+  - Supprimer receiv.bmp
+  
+      Steganographie :
+- Insertion du texte dans l'image : appel de la fonction steghide, choix de la meilleure image, insertion dans le fichier send.bmp
+- Extraction du texte de l'image : appel de la fonction steghide, extraction sous le fichier receiv.bmp
+- Fonction de cryptage String crypter(String "txt a crypter")
