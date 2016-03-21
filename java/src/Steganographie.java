@@ -33,11 +33,11 @@ public class Steganographie {
      * Embed the embedTxt into cover.bmp using the passphrase param
      * @param embedTxt the text that has to be embed
      * @param passphrase the passphrase
+     * @return coverFileName
      */
-    protected void insert(String embedTxt, String passphrase) {
+    protected File insert(String embedTxt, String passphrase) {
         System.out.println("Starting Insertion");
         File tmp = new File ("resources"+p+"embedMsg.txt");
-        String coverFileName;
 
         try {
             FileWriter fw = new FileWriter(tmp);
@@ -48,10 +48,35 @@ public class Steganographie {
         }
 
         String[] cmd;
-        File coverFile = getBestWeightFile(tmp.getTotalSpace());
+        File coverFile = getBestWeightFile(tmp.length());
+
         if (coverFile != null) {
+            System.out.println("Copying file");
+            if (os.contains("Windows")) {
+                cmd = new String[] {"xcopy", "/Y", "/C", "resources"+p+"covering files"+p+coverFile.getName(), "resources"+p};
+
+            } else {
+                cmd = new String[] {"cp", "resources"+p+"covering files"+p+coverFile.getName(), "resources"+p};
+            }
+
+            for (String s : cmd) {
+                System.out.println(s);
+            }
+
+            try {
+                Process process = runtime.exec(cmd);
+                process.waitFor();
+            } catch (InterruptedException e) {
+                System.out.println("Copy has been interrupted");
+                e.printStackTrace();
+            } catch (IOException e) {
+                System.out.println("Copy failed");
+                e.printStackTrace();
+            }
+            File sendFile = new File("resources"+p+coverFile.getName());
+
             System.out.println("Embed text has a correct length.");
-            cmd = new String[]{"", "embed", "-ef resources" + p + "embedMsg.txt", "-cf " + "resources" + p +"covered files"+p+coverFile.getName(), "-p " + passphrase, "-z 9"};
+            cmd = new String[]{"", "embed", "-ef resources" + p + "embedMsg.txt", "-cf " + "resources" + p +sendFile.getName(), "-p " + passphrase, "-z 9"};
 
             if (os.contains("Windows")) {
                 System.out.println("Windows OS detected");
@@ -72,24 +97,27 @@ public class Steganographie {
                 e.printStackTrace();
             }
             System.out.println("Insertion correctly ended");
+            return sendFile;
         }
+        return null;
     }
 
     /**
      * Extract msg from recep.bmp using passphrase param.
-     * @param passphrase the passphrase. Here the owner username
+     * @param passphrase the passphrase. Here : the owner username
      * @return Embeded text
      */
     protected String extract(String passphrase) {
         System.out.println("Starting Extraction");
         File tmp = new File ("resources"+p+"embedMsg.txt");
-        String[] cmd = new String[]{"","extract", "-sf resources"+p+"recep.bmp", "-xf resources"+p+"extractMsg.txt", "-p "+passphrase};
+
+        String[] cmd = new String[]{"","extract", "-sf resources"+p+"receiv.bmp", "-xf resources"+p+"extractMsg.txt", "-p "+passphrase};
         if (os.contains("Windows")) {
             System.out.println("Windows OS detected");
             cmd[0]="resources"+p+"steghide"+p+"steghide.exe";
         } else {
             System.out.println("Other OS detected");
-            cmd[0]="steghide";
+            cmd[0] = "steghide";
         }
 
         try {
@@ -129,7 +157,7 @@ public class Steganographie {
         File coveringFiles = new File("resources"+p+"covering files");
         File[] listFiles = coveringFiles.listFiles();
         for (File f : listFiles) {
-            if (f.getTotalSpace()>=required*0.302) {
+            if (f.length()>=required*0.302) {
                 System.out.println("The file "+f.getName()+" is the most appropriated file.");
                 return f;
             }
